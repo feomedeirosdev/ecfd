@@ -19,80 +19,235 @@ def get_project_root() -> Path:
     raise RuntimeError("Arquivo .projroot não encontrado."
                        "Verifique se ele está na raiz do projeto.")
 
-def create_hist_box(col, n_bins=100, y_scale='linear'):
+plt.rcParams.update({
+    "font.family": "sans-serif",
+    "font.size": 10,
+    "axes.labelsize": 10,
+    "axes.titlesize": 11,
+    "xtick.labelsize": 9,
+    "ytick.labelsize": 9,
+    "axes.edgecolor": "#333",
+    "axes.linewidth": 0.8,
+    "figure.dpi": 120
+})
 
-    delta_bin = (df[col].max() - df[col].min())/n_bins
+def create_hist_box(col, df, n_bins=100, y_scale='linear'):
+    """
+        Gera uma figura contendo um histograma e um boxplot horizontal
+        para uma variável numérica.
+
+        Parameters
+        ----------
+        col : str
+            Nome da coluna numérica do DataFrame.
+        df : pandas.DataFrame
+            DataFrame contendo os dados.
+        n_bins : int, default=100
+            Número de bins do histograma.
+        y_scale : {'linear', 'log'}, default='linear'
+            Escala do eixo y do histograma.
+
+        Saves
+        -----
+        ../../img/hist_box_<col>.png
+            Arquivo PNG da figura com resolução de 300 dpi.
+
+        Notes
+        -----
+        O título do gráfico é omitido para uso em relatórios (caption externo).
+        O tamanho do bin (Δ) é exibido discretamente no canto superior direito
+        do histograma.
+    """
+    delta_bin = (df[col].max() - df[col].min()) / n_bins
 
     fig, (ax1, ax2) = plt.subplots(
-        2,          # duas linhas
-        1,          # uma coluna
-        figsize=(8, 6),
-        height_ratios=[4, 1]   # hist grande, box pequeno
+        2,
+        1,
+        figsize=(7.5, 5.2), # proporção mais de paper
+        height_ratios=[4, 1]
     )
 
     # --- HISTOGRAMA ---
     ax1.hist(
         df[col],
         bins=n_bins,
-        edgecolor='black'
+        edgecolor="#222",
+        linewidth=0.5,
+        color="#4a90e2"  # azul discreto
     )
-    ax1.set_yscale(y_scale)
-    ax1.set_title(f"hist_box de {col} - ({delta_bin:.2f})")
-    ax1.set_ylabel("ocorrência")
 
-    # oculta os xticks aqui
-    #ax1.tick_params(axis='x', which='both', bottom=False, labelbottom=False)
+    ax1.text(
+        0.98, 0.95,
+        f"Δ = {delta_bin:.3g}",
+        ha="right",
+        va="top",
+        transform=ax1.transAxes,
+        fontsize=9,
+        color="#333",
+        bbox=dict(
+            facecolor="white",
+            edgecolor="none",
+            alpha=0.6,
+            boxstyle="round,pad=0.3"
+        )
+    )
+
+    ax1.set_yscale(y_scale)
+    # ax1.set_title(f"{col} — histograma + boxplot  (Δ={delta_bin:.3g})")
+    ax1.set_ylabel("Contagem")
+
+    # ax1.grid(
+    #     True,
+    #     which="both",
+    #     linestyle="--",
+    #     linewidth=0.4,
+    #     alpha=0.4
+    # )
+
+    # Remove xticks do histograma para não poluir
+    ax1.tick_params(axis="x", bottom=False, labelbottom=False)
 
     # --- BOXPLOT ---
-    ax2.boxplot(df[col], vert=False)
-    ax2.set_xlabel(f"{col}")
+    bp = ax2.boxplot(
+        df[col],
+        vert=False,
+        patch_artist=True,
+        boxprops=dict(facecolor="#d9e6f5", color="#222", linewidth=0.8),
+        medianprops=dict(color="#d0021b", linewidth=1.2),
+        whiskerprops=dict(color="#222", linewidth=0.8),
+        capprops=dict(color="#222", linewidth=0.8)
+    )
+
+    ax2.set_xlabel(col)
     ax2.set_yticks([])
 
+    # Margens mais justas
     plt.tight_layout()
-    plt.savefig(f'../../img/hist_box_{col}.jpg', dpi=300, bbox_inches='tight')
+
+    # plt.savefig(f'../../img/hist_box_{col}.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 def plot_flag(col):
-    counts = df[col].value_counts(normalize=True).sort_index()
+    """
+    Plota uma barra vertical para flags (0/1) com:
+    - valores absolutos no eixo y
+    - porcentagens exibidas nas barras (posição adaptativa)
+    """
 
-    plt.figure(figsize=(5,3))
+    abs_counts = df[col].value_counts().sort_index()
+    rel_counts = df[col].value_counts(normalize=True).sort_index() * 100
 
-    plt.bar(
-        counts.index.astype(str), 
-        counts.values, 
-        edgecolor='black'
-        )
-    
-    plt.title(f"{col} — distribuição 0/1")
-    plt.ylabel("Contagem")
-    plt.grid(axis='y', linestyle='--', alpha=0.3)
+    fig, ax = plt.subplots(figsize=(4, 3))
+
+    bars = ax.bar(
+        abs_counts.index.astype(str),
+        abs_counts.values,
+        edgecolor="black"
+    )
+
+    ax.set_ylabel("Contagem")
+    ax.set_xlabel(col)
+
+    # limiar baseado na barra maior
+    limiar = abs_counts.max() * 0.15  # 15% da maior barra
+
+    # adiciona porcentagens (adaptativo)
+    for bar, pct, val in zip(bars, rel_counts, abs_counts):
+        height = bar.get_height()
+        x = bar.get_x() + bar.get_width() / 2
+
+        if height >= limiar:
+            # dentro da barra
+            ax.text(
+                x,
+                height * 0.92,
+                f"{pct:.1f}%",
+                ha="center",
+                va="top",
+                color="white",
+                fontsize=9
+            )
+        else:
+            # fora da barra
+            ax.text(
+                x,
+                height * 1.02,
+                f"{pct:.1f}%",
+                ha="center",
+                va="bottom",
+                color="black",
+                fontsize=9
+            )
+
     plt.tight_layout()
     plt.show()
 
-def plot_barh(col, top_n=None):
+
+def plot_barh(col, df, top_n=None):
     """
-    Plota barras horizontais para uma variável categórica.
-    Se top_n for fornecido, plota apenas as top_n categorias mais frequentes.
+    Plota barras horizontais para uma variável categórica com:
+    - valores absolutos no eixo x
+    - porcentagem exibida em cada barra (posição adaptativa)
+
+    A porcentagem aparece:
+    - dentro da barra, alinhada à direita, se a barra for grande
+    - fora da barra, à direita, se a barra for pequena
     """
-    counts = df[col].value_counts()
+
+    counts = df[col].value_counts(ascending=True)
 
     if top_n is not None:
         counts = counts.head(top_n)
 
-    plt.figure(figsize=(8, max(3, len(counts)*0.35)))  # altura dinâmica
+    total = counts.sum()
+    percentages = counts / total * 100
 
-    plt.barh(
-        counts.index.astype(str),
-        counts.values,
-        edgecolor='black'
+    fig, ax = plt.subplots(
+        figsize=(8, max(3, len(counts) * 0.35))
     )
 
-    plt.xlabel("Contagem")
-    plt.title(f"Distribuição de {col}")
-    plt.grid(axis='x', linestyle='--', alpha=0.3)
+    ax.barh(
+        counts.index.astype(str),
+        counts.values,
+        edgecolor="black"
+    )
+
+    ax.set_xlabel("Contagem")
+    ax.set_ylabel(col)
+
+    # threshold para decidir se a porcentagem fica dentro ou fora
+    limiar = counts.max() * 0.10  # 10% da barra maior
+
+    # Adiciona o texto das porcentagens
+    for i, (value, pct) in enumerate(zip(counts.values, percentages)):
+        y = i  # posição da categoria
+
+        if value >= limiar:
+            # texto dentro da barra
+            ax.text(
+                value * 0.98,  # um pouco antes do final da barra
+                y,
+                f"{pct:.1f}%",
+                ha="right",
+                va="center",
+                color="white",
+                fontsize=9,
+            )
+        else:
+            # texto fora da barra
+            ax.text(
+                value * 1.02,
+                y,
+                f"{pct:.1f}%",
+                ha="left",
+                va="center",
+                color="black",
+                fontsize=9,
+            )
 
     plt.tight_layout()
     plt.show()
+
 
 # %% CARREGANDO DADOS
 root = get_project_root()
@@ -199,17 +354,17 @@ print(df_dict)
 plot_flag('is_fraud')
 
 # %% HISTOGRAMAS/BOXPLOTS DAS VARIÁVEIS NUMÉRICAS
-create_hist_box(col='account_age_days')
-create_hist_box(col='total_transactions_user', n_bins=20)
-create_hist_box(col='avg_amount_user', y_scale='log')
-create_hist_box(col='amount', y_scale='log')
-create_hist_box(col='shipping_distance_km', y_scale='log')
+create_hist_box(col='account_age_days', df=df)
+create_hist_box(col='total_transactions_user', df=df, n_bins=20)
+create_hist_box(col='avg_amount_user', df=df, y_scale='log')
+create_hist_box(col='amount', df=df, y_scale='log')
+create_hist_box(col='shipping_distance_km', df=df, y_scale='log')
 
 # %% BARRAS HORIZONTAIS DAS VARIÁVEIS CATEGÓRICAS
-plot_barh('country')
-plot_barh('bin_country')
-plot_barh('channel')
-plot_barh('merchant_category')
+plot_barh(col='country', df=df)
+plot_barh(col='bin_country', df=df)
+plot_barh(col='channel', df=df)
+plot_barh(col='merchant_category', df=df)
 
 # %% BARRAS VERTICATS DAS FLAGS
 plot_flag('promo_used')
