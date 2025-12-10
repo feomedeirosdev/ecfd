@@ -1,0 +1,22 @@
+name: ecfd-py313
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.13
+  - ipykernel
+  - pandas
+  - numpy
+  - matplotlib
+  - plotly
+  - seaborn
+  - scikit-learn
+  - statsmodels
+  - sqlalchemy
+  - pathlib
+  - pyarrow
+  - openpyxl
+  - pip
+
+      
+
