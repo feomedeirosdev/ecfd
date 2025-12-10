@@ -1,0 +1,100 @@
+{
+    "title": "e-Commerce FD",
+    "cols": [
+        {
+            "title": "Brainstorm",
+            "tasks": [
+                {
+                    "text": "Subir o GitHub Pages",
+                    "id": "vzow25tmevi9reo5yamf3u33"
+                },
+                {
+                    "text": "Revisar as docstrings de todas as funçõe de plotagem",
+                    "id": "g5qm29sa4t7tcrr93takbpu0"
+                }
+            ],
+            "id": "lggzkvqj5odx6lxz2p869n3h",
+            "color": "#abb8c3"
+        },
+        {
+            "title": "To-Do",
+            "tasks": [
+                {
+                    "text": "Decision Tree Classifier",
+                    "id": "gtg7u7kz0eejs05cv1sd6iru"
+                },
+                {
+                    "text": "Regressão logistica com interações",
+                    "id": "lidjjz5cvskdkr4qcca3d27p"
+                }
+            ],
+            "id": "m8ichqkp9l1icz9x4cf3emge",
+            "color": "#eb144c"
+        },
+        {
+            "title": "In Process",
+            "tasks": [
+                {
+                    "text": "Estilizando o latex",
+                    "id": "hvgxoebsi8l16mytc5dw69gj"
+                },
+                {
+                    "text": "Estilizando o pages",
+                    "id": "h4uvw2mzrf12uujkkwvkj2ko"
+                }
+            ],
+            "id": "h2jr8si7v9um8upye8yasmff",
+            "color": "#fcb900"
+        },
+        {
+            "title": "Done",
+            "tasks": [
+                {
+                    "text": "Informações preliminares do Dataset",
+                    "id": "ug9d8wnbs5oa3fx75lr96kd8"
+                },
+                {
+                    "text": "Descrição das Variáveis",
+                    "id": "rp6tkupk8xkoopb9501lm10h"
+                },
+                {
+                    "text": "Gráfico da target",
+                    "id": "h8g6pbgndr1cvtcenkfz7hrv"
+                },
+                {
+                    "text": "Gráficos hist_bplot das numéricas",
+                    "id": "mt6lfpwfxucb6uq9llcekhlj"
+                },
+                {
+                    "text": "Gráficos hbar das categóricas",
+                    "id": "yyn4rk2s68tnmosn0px1zyof"
+                },
+                {
+                    "text": "Gráficos vbar das flags",
+                    "id": "y5k5dcaa1u3kprhthtehytdq"
+                },
+                {
+                    "text": "Análise da coluna 'transaction_time'",
+                    "id": "a36o5ocoogqjbjjsxm70tm68"
+                },
+                {
+                    "text": "Correlações numéricas\n",
+                    "id": "xp8hy55m16y0d5phjupe2h6v"
+                },
+                {
+                    "text": "Análise das flags. Obtenção das proporções reais ",
+                    "id": "lop3hq8amftavbcumoqpnf8l"
+                },
+                {
+                    "text": "Ánalise das flags usando regressão logistica símples e aprendizado estatístico. Obtenção das probabilidades preditas",
+                    "id": "d0wdxwfakm7est2owcok9fls"
+                }
+            ],
+            "id": "eg98980zx75k0um7h19rmpv4",
+            "color": "#00d084"
+        }
+    ],
+    "autosave": true,
+    "saveToFile": true,
+    "timestamp": 1765410574533
+}
