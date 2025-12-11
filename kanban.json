@@ -20,12 +20,12 @@
             "title": "To-Do",
             "tasks": [
                 {
-                    "text": "Decision Tree Classifier",
-                    "id": "gtg7u7kz0eejs05cv1sd6iru"
-                },
-                {
                     "text": "Regressão logistica com interações",
                     "id": "lidjjz5cvskdkr4qcca3d27p"
+                },
+                {
+                    "text": "Decision Tree Classifier",
+                    "id": "gtg7u7kz0eejs05cv1sd6iru"
                 }
             ],
             "id": "m8ichqkp9l1icz9x4cf3emge",
@@ -96,5 +96,5 @@
     ],
     "autosave": true,
     "saveToFile": true,
-    "timestamp": 1765410574533
+    "timestamp": 1765447162016
 }

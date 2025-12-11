@@ -1,91 +1,45 @@
-# %% CARREGANDO MÓDULOS
-
+# %% Célula de Inicialização para o IPyKernel(Execute Apenas Uma Vez)
+import sys
 from pathlib import Path
+
+# --- Bloco de Código que Deve Correr Antes de Qualquer 'from src...' ---
+# 1. Busca pelo .projroot (O Ponto de Origem)
+def find_project_root():
+    # Caminho do arquivo que contém este código.
+    current_path = Path.cwd() 
+    # Tenta subir até encontrar o .projroot
+    for parent in [current_path] + list(current_path.parents):
+        if (parent / '.projroot').exists():
+            return parent
+    return None
+
+project_root = find_project_root()
+
+if project_root:
+    # 2. Caminho de código que queremos adicionar (ecfd/)
+    # Adicionamos a RAIZ do projeto ao sys.path.
+    if str(project_root) not in sys.path:
+        sys.path.append(str(project_root))
+        print(f"Path de projeto adicionado ao Kernel: {project_root}")
+else:
+    print("ERRO CRÍTICO: Raiz do projeto não encontrada.")
+# --- Fim do Bloco de Injeção ---
+
+# %%
 import pandas as pd
 from sklearn.model_selection import train_test_split
+import itertools
 import statsmodels.api as sm
 import numpy as np
-import itertools
-from sklearn.linear_model import LogisticRegression
 from sklearn.calibration import calibration_curve
-from sklearn.metrics import confusion_matrix
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_curve, roc_auc_score
-from sklearn.metrics import classification_report
 
-
-# %% CARREGANDO FUNÇÕES
-
-def get_project_root() -> Path:
-    """
-    Retorna a raiz do projeto (pasta que contém o arquivo .projroot).
-    Funciona independetemente de onde o script for executado.
-    """
-    current = Path(__file__).resolve()
-    for parent in current.parents:
-        if (parent/'.projroot').exists():
-            return parent       
-    raise RuntimeError("Arquivo .projroot não encontrado."
-                       "Verifique se ele está na raiz do projeto.")
-
-def load_flags_dataframe(df):
-    """Retorna somente as flags e o target."""
-    cols = ['cvv_result', 'avs_match', 'three_ds_flag', 'promo_used', 'is_fraud']
-    return df[cols].copy()
-
-# 1. Regressão Logística simples (sem interações)
-def logistic_simple(df_flags):
-    X = df_flags.drop('is_fraud', axis=1)
-    y = df_flags['is_fraud']
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, 
-        y, 
-        test_size=0.3, 
-        random_state=42, 
-        stratify=y
-    )
-
-    model = LogisticRegression(max_iter=1000)
-    model.fit(X_train, y_train)
-
-    preds = model.predict(X_test)
-
-    return model, classification_report(y_test, preds, output_dict=True)
-
-def fraud_prob(cvv, avs, ds, promo, coef):
-    """
-    Retorna a probabilidade estimada de fraude para qualquer combinação das 4 flags.
-    
-    Parâmetros:
-        cvv   : 0 ou 1
-        avs   : 0 ou 1
-        ds    : 0 ou 1 (three_ds_flag)
-        promo : 0 ou 1 (promo_used)
-
-    Exemplo:
-        fraud_prob(0, 0, 0, 1)
-    """
-    z = (
-        coef['const']
-        + coef['cvv_result']  * cvv
-        + coef['avs_match']   * avs
-        + coef['three_ds_flag'] * ds
-        + coef['promo_used']  * promo
-    )
-    
-    p = 1 / (1 + np.exp(-z))
-    return float(p)
-
-def confusion_at(th):
-    pred = (y_proba >= th).astype(int)
-    tn, fp, fn, tp = confusion_matrix(y_test, pred).ravel()
-    return {
-        'threshold': th,
-        'TP': tp, 'FP': fp,
-        'FN': fn, 'TN': tn,
-        'precision': tp / (tp + fp + 1e-9),
-        'recall': tp / (tp + fn + 1e-9)
-    }
+from src.utils.paths import get_project_root
+from src.utils.flagsmu import load_flags_dataframe
+# from src.utils.flagsmu import logistic_simple
+from src.utils.flagsmu import fraud_prob
+from src.utils.flagsmu import confusion_at
 
 # %% CARREGANDO DADOS
 
@@ -93,10 +47,14 @@ print('1. carregamento')
 root = get_project_root()
 csv_path = root/'data'/'raw'/'transactions.csv'
 df = pd.read_csv(csv_path)
+print(df.head())
+
+# %%
 df_flags = load_flags_dataframe(df)
 print(df_flags)
 print()
 
+# %%
 # Checagem Inicial
 print("2. dtypes e missing")
 print(df_flags.dtypes)
@@ -255,7 +213,7 @@ print(df_calibration)
 # C2 - Matrizes de confusão em vários thresholds
 
 thresholds = [0.01, 0.02, 0.05, 0.10, 0.20]
-df_thresholds = pd.DataFrame([confusion_at(t) for t in thresholds])
+df_thresholds = pd.DataFrame([confusion_at(t, y_proba=y_proba, y_test=y_test) for t in thresholds])
 
 print("\n=== Matrizes em vários thresholds ===")
 print(df_thresholds)

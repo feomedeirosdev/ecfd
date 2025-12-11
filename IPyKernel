@@ -1,0 +1,26 @@
+# Célula de Inicialização para o IPyKernel(Execute Apenas Uma Vez)
+import sys
+from pathlib import Path
+
+# --- Bloco de Código que Deve Correr Antes de Qualquer 'from src...' ---
+# 1. Busca pelo .projroot (O Ponto de Origem)
+def find_project_root():
+    # Caminho do arquivo que contém este código.
+    current_path = Path.cwd() 
+    # Tenta subir até encontrar o .projroot
+    for parent in [current_path] + list(current_path.parents):
+        if (parent / '.projroot').exists():
+            return parent
+    return None
+
+project_root = find_project_root()
+
+if project_root:
+    # 2. Caminho de código que queremos adicionar (ecfd/)
+    # Adicionamos a RAIZ do projeto ao sys.path.
+    if str(project_root) not in sys.path:
+        sys.path.append(str(project_root))
+        print(f"Path de projeto adicionado ao Kernel: {project_root}")
+else:
+    print("ERRO CRÍTICO: Raiz do projeto não encontrada.")
+# --- Fim do Bloco de Injeção ---
