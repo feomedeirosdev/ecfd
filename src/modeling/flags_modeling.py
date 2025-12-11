@@ -34,6 +34,7 @@ from src.utils.flagsmu import load_flags_dataframe
 from src.utils.flagsmu import fraud_prob
 from src.utils.flagsmu import confusion_at
 
+
 # %% CARREGANDO DADOS
 
 print('1. carregamento')
@@ -216,3 +217,21 @@ fpr, tpr, _ = roc_curve(y_test, y_proba)
 print(f"\nAUC = {auc:.4f}")
 
 # %%
+
+# combo | prob_fraud | is_fraud
+# 0001 | 0.309359 | 0.321912
+# 1001 | 0.174835 | 0.167293
+# 0000 | 0.145237 | 0.150409
+# 0011 | 0.133594 | 0.100179
+# 1000 | 0.074393 | 0.064888
+# 1011 | 0.067978 | 0.071688
+# 0101 | 0.064771 | 0.062874
+# 0010 | 0.055258 | 0.043647
+# 1101 | 0.031721 | 0.026789
+# 1010 | 0.026922 | 0.027160
+# 0100 | 0.025599 | 0.024970
+# 0111 | 0.023286 | 0.014733
+# 1100 | 0.012274 | 0.010221
+# 1111 | 0.011151 | 0.011820
+# 0110 | 0.008963 | 0.007904
+# 1110 | 0.004260 | 0.004710

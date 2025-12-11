@@ -600,3 +600,5 @@ df_combo_prob = pd.DataFrame(S_combo_prob).reset_index()
 print('[PROPORÇÕES OBSERVADAS]')
 print(df_combo_prob)
 
+
+# %%
