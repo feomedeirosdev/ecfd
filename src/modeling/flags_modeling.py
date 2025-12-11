@@ -1,13 +1,9 @@
-# %% Célula de Inicialização para o IPyKernel(Execute Apenas Uma Vez)
+# %% Célula de Inicialização para o IPyKernel (Execute Apenas Uma Vez)
 import sys
 from pathlib import Path
 
-# --- Bloco de Código que Deve Correr Antes de Qualquer 'from src...' ---
-# 1. Busca pelo .projroot (O Ponto de Origem)
 def find_project_root():
-    # Caminho do arquivo que contém este código.
     current_path = Path.cwd() 
-    # Tenta subir até encontrar o .projroot
     for parent in [current_path] + list(current_path.parents):
         if (parent / '.projroot').exists():
             return parent
@@ -16,8 +12,6 @@ def find_project_root():
 project_root = find_project_root()
 
 if project_root:
-    # 2. Caminho de código que queremos adicionar (ecfd/)
-    # Adicionamos a RAIZ do projeto ao sys.path.
     if str(project_root) not in sys.path:
         sys.path.append(str(project_root))
         print(f"Path de projeto adicionado ao Kernel: {project_root}")
@@ -25,7 +19,7 @@ else:
     print("ERRO CRÍTICO: Raiz do projeto não encontrada.")
 # --- Fim do Bloco de Injeção ---
 
-# %%
+# %% IMPORTANDO MÓDULOS
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import itertools
@@ -37,7 +31,6 @@ from sklearn.metrics import roc_curve, roc_auc_score
 
 from src.utils.paths import get_project_root
 from src.utils.flagsmu import load_flags_dataframe
-# from src.utils.flagsmu import logistic_simple
 from src.utils.flagsmu import fraud_prob
 from src.utils.flagsmu import confusion_at
 
@@ -47,15 +40,13 @@ print('1. carregamento')
 root = get_project_root()
 csv_path = root/'data'/'raw'/'transactions.csv'
 df = pd.read_csv(csv_path)
-print(df.head())
+print(f'{df.head()}\n')
 
-# %%
 df_flags = load_flags_dataframe(df)
-print(df_flags)
-print()
+print(f'{df_flags}\n')
 
-# %%
-# Checagem Inicial
+
+# %% CHECAGEM DE DADOS
 print("2. dtypes e missing")
 print(df_flags.dtypes)
 print(df_flags.isnull().sum())
@@ -74,7 +65,7 @@ print("=== valores não-binários (esperamos listas vazias) ===")
 print(non_binary)
 
 # Se as listas acima estiverem vazias, podemos converter com segurança:
-df_flags = df_flags.fillna(-1)  # só por segurança; falaremos sobre missings se aparecerem
+df_flags = df_flags.fillna(-1)
 for c in flags:
     df_flags[c] = df_flags[c].astype(int)
 print()
