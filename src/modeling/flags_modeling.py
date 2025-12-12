@@ -296,3 +296,25 @@ print(df_or.sort_values('odds_ratio', ascending=False))
 
 # %% INICIO DA DECISION TREE CLASSIFIER
 X_train, X_test, y_train, y_test = xy_train_test_split(df=df_flags, target='is_fraud')
+
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix
+
+model_dtc = DecisionTreeClassifier(
+    random_state=42,
+    max_depth=5,
+    class_weight='balanced'
+)
+
+model_dtc.fit(X_train, y_train)
+
+y_pred = model_dtc.predict(X_test)
+
+print(f'\naccuracy_score: {accuracy_score(y_test, y_pred)}')
+print(f'precision_score: {precision_score(y_test, y_pred, average='binary')}')
+print(f'recall_score: {recall_score(y_test, y_pred, average='binary')}\n')
+
+cm = confusion_matrix(y_test, y_pred)
+print('Matriz de confusão')
+print(cm)
+# %%
