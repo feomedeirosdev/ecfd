@@ -33,6 +33,7 @@ from src.utils.paths import get_project_root
 from src.utils.flagsmu import load_flags_dataframe
 from src.utils.flagsmu import fraud_prob
 from src.utils.flagsmu import confusion_at
+from src.utils.flagsmu import xy_train_test_split
 
 
 # %% CARREGANDO DADOS
@@ -216,7 +217,7 @@ fpr, tpr, _ = roc_curve(y_test, y_proba)
 
 print(f"\nAUC = {auc:.4f}")
 
-# %%
+# %% Tabela prob_fraud x is_fraud
 
 # combo | prob_fraud | is_fraud
 # 0001 | 0.309359 | 0.321912
@@ -235,3 +236,63 @@ print(f"\nAUC = {auc:.4f}")
 # 1111 | 0.011151 | 0.011820
 # 0110 | 0.008963 | 0.007904
 # 1110 | 0.004260 | 0.004710
+
+# %% INÍCIO REG-LOGIT-INTERCT
+
+# Cópia de segurança
+df_flags_interact = df_flags.copy()
+df_flags_interact['avs_promo'] = df_flags_interact['avs_match'] * df_flags_interact['promo_used']
+df_flags_interact['cvv_promo'] = df_flags_interact['cvv_result'] * df_flags_interact['promo_used']
+df_flags_interact['tds_promo'] = df_flags_interact['three_ds_flag'] * df_flags_interact['promo_used']
+print(df_flags_interact)
+
+# 
+X = df_flags_interact.drop('is_fraud', axis=1)
+y = df_flags_interact['is_fraud']
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.3,
+    random_state=42,
+    stratify=y
+)
+
+print("Shapes:")
+print("X_train:", X_train.shape)
+print("X_test :", X_test.shape)
+print(f"y_train (sum frauds): {y_train.sum()} de {y_train.shape[0]} - pct: {y_train.sum()/y_train.shape[0]}")
+print(f"y_test  (sum frauds): {y_test.sum()} de {y_test.shape[0]} - pct: {y_test.sum()/y_test.shape[0]}")
+
+# # %%
+# # Adiciona intercepto
+X = sm.add_constant(X, has_constant='add')
+
+# # Ajustando o modelo Logit
+model_sm = sm.Logit(y, X)
+result = model_sm.fit(disp=False) # disp=False para não poluir a saída
+
+# # Mostara sumário estatísticos
+print(f'\nSumário Estatístico\n{result.summary()}\n')
+
+# # Calcular ratios e intervalos de confiança
+coef = result.params
+conf = result.conf_int()
+conf.columns = ['2.5%', '97.5%']
+
+odds = np.exp(coef)
+odds_ci = np.exp(conf)
+
+df_or = pd.DataFrame({
+    'coef': coef,
+    'odds_ratio': odds,
+    'ci_lower': odds_ci['2.5%'],
+    'ci_upper': odds_ci['97.5%'],
+    'p_value': result.pvalues
+})
+
+print("\nOdds ratios e IC 95%:")
+print(df_or.sort_values('odds_ratio', ascending=False))
+
+# %% INICIO DA DECISION TREE CLASSIFIER
+X_train, X_test, y_train, y_test = xy_train_test_split(df=df_flags, target='is_fraud')

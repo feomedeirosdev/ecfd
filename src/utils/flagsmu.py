@@ -10,6 +10,26 @@ def load_flags_dataframe(df):
     cols = ['cvv_result', 'avs_match', 'three_ds_flag', 'promo_used', 'is_fraud']
     return df[cols].copy()
 
+def xy_train_test_split(df, target):
+    X = df.drop(target, axis=1)
+    y = df[target]
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, 
+        y, 
+        test_size=0.3, 
+        random_state=42, 
+        stratify=y
+    )
+
+    print("Shapes:")
+    print("X_train:", X_train.shape)
+    print("X_test :", X_test.shape)
+    print(f"y_train (sum): {y_train.sum()} de {y_train.shape[0]} - pct: {y_train.sum()/y_train.shape[0]}")
+    print(f"y_test  (sum): {y_test.sum()} de {y_test.shape[0]} - pct: {y_test.sum()/y_test.shape[0]}")
+    
+    return X_train, X_test, y_train, y_test
+
 # 1. Regressão Logística simples (sem interações)
 def logistic_simple(df_flags):
     X = df_flags.drop('is_fraud', axis=1)
